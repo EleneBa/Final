@@ -1,0 +1,46 @@
+TLS SUMMARY
+
+Website tested:
+    www.google.com:443
+
+TLS Version:
+    TLSv1.3
+
+Cipher Suite:
+    TLS_AES_256_GCM_SHA384
+
+Certificate Chain (Root → Intermediate → Leaf):
+
+  Leaf Certificate:
+    Subject: CN=www.google.com
+    Issuer:  CN=WE2
+
+  Intermediate:
+    Subject: CN=WE2
+    Issuer:  CN=GTS Root R4
+
+  Root:
+    Subject: CN=GTS Root R4
+    Issuer:  CN=GlobalSign Root CA
+
+Wireshark Analysis:
+    • Client Hello: Contains supported TLS versions, cipher suites, SNI, many extensions.
+    • Server Certificate: Server sends the certificate chain shown above.
+    • Key Exchange:
+        In TLS 1.3, key exchange happens during/after Server Hello.
+        Google’s server negotiated X25519MLKEM768 (hybrid key exchange).
+
+Confidentiality:
+    TLS encrypts all application data with symmetric encryption
+    (AES-GCM in this session). Only parties with the session keys can
+    decrypt the traffic.
+
+Integrity:
+    TLS uses AEAD ciphers such as AES-GCM which provide authentication
+    tags. Any modification of encrypted TLS data causes decryption to
+    fail, preventing tampering.
+
+Summary:
+    TLS uses certificates for authentication, ECDHE/X25519 for secure
+    key exchange, and strong AEAD ciphers to protect confidentiality
+    and integrity.
