@@ -1,0 +1,57 @@
+# Encrypted Messaging App Prototype – Encryption Flow
+
+## 1. Overview
+
+This prototype implements a hybrid encryption scheme:
+- **RSA** (asymmetric) is used to protect a randomly generated AES session key.
+- **AES-256** (symmetric) is used to encrypt the actual message content.
+
+All scripts are written in Python using the `cryptography` library.
+
+## 2. Key Generation (User A)
+
+1. `generate_keys.py` calls `rsa.generate_private_key(...)` with:
+   - key size: 2048 bits
+   - public exponent: 65537
+2. The private key is serialized as `rsa_private.pem` (PEM, PKCS8, no password).
+3. The corresponding public key is serialized as `rsa_public.pem`.
+4. User A keeps `rsa_private.pem` secret and shares `rsa_public.pem` with User B.
+
+## 3. Encryption Flow (User B)
+
+1. User B writes a plaintext message into `message.txt`.
+2. `encrypt_message.py` reads `message.txt` as bytes.
+3. A 32-byte random AES key (256 bits) is generated using `os.urandom(32)`.
+4. A random 16-byte IV is generated using `os.urandom(16)`.
+5. The plaintext is padded with PKCS7 to match the AES block size.
+6. The padded plaintext is encrypted with AES-256 in CBC mode:
+   - Algorithm: `AES(aes_key)`
+   - Mode: `CBC(iv)`
+7. The script concatenates `iv + ciphertext` and writes it to `encrypted_message.bin`.
+8. The AES key is then encrypted with RSA using OAEP padding with SHA-256:
+   - `public_key.encrypt(aes_key, OAEP(...))`
+9. The RSA-encrypted AES key is saved as `aes_key_encrypted.bin`.
+
+## 4. Decryption Flow (User A)
+
+1. `decrypt_message.py` loads the RSA private key from `rsa_private.pem`.
+2. The script reads `aes_key_encrypted.bin` and decrypts it with the private RSA key using OAEP and SHA-256, recovering the original 32-byte AES key.
+3. The script reads `encrypted_message.bin` and splits it into:
+   - IV: first 16 bytes
+   - Ciphertext: remaining bytes
+4. Using the recovered AES key and IV, the script decrypts the ciphertext with AES-256 CBC.
+5. PKCS7 padding is removed to recover the original plaintext.
+6. The result is written to `decrypted_message.txt`.
+7. `decrypted_message.txt` should match `message.txt`, validating the full round-trip.
+
+## 5. Files Overview
+
+- `message.txt` – plaintext input from User B.
+- `encrypted_message.bin` – IV + AES-encrypted ciphertext.
+- `aes_key_encrypted.bin` – RSA-encrypted AES-256 key.
+- `decrypted_message.txt` – plaintext recovered by User A.
+- `rsa_private.pem` – User A's private RSA key.
+- `rsa_public.pem` – User A's public RSA key.
+- `generate_keys.py` – key pair generation.
+- `encrypt_message.py` – AES encryption + RSA key wrapping.
+- `decrypt_message.py` – RSA key unwrapping + AES decryption.
