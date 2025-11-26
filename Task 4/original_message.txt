@@ -1,0 +1,1 @@
+This is a confidential internal message secured by PGP between Alice and Bob.
