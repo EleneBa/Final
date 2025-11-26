@@ -1,0 +1,36 @@
+SIGNATURE VERIFICATION EXPLANATION
+
+1. Alice signs the original_message.txt using her private PGP key.
+   - Command:
+       gpg --armor --output signed_message.asc --local-user "Alice Example" \
+           --recipient "Bob Example" --sign --encrypt original_message.txt
+   - The output file signed_message.asc contains:
+       • The encrypted message (encrypted to Bob's public key)
+       • A digital signature created with Alice's private key
+
+2. Bob decrypts the message with his private key:
+   - Command:
+       gpg --output decrypted_message.txt --decrypt signed_message.asc
+
+3. During decryption, GPG automatically verifies the signature:
+   - It uses Alice's PUBLIC key (which Bob has imported) to check the
+     signature block in signed_message.asc.
+   - If the signature matches, GPG prints:
+       "Good signature from 'Alice Example <alice@example.com>'"
+
+4. Why this proves the sender:
+   - Only Alice's private key could generate a valid signature that matches
+     Alice's public key.
+   - If Bob trusts that the public key really belongs to Alice, then a
+     "Good signature" means:
+       • The message came from Alice (authenticity).
+       • The message has not been modified since Alice signed it (integrity).
+
+5. If the message is altered or signed by someone else:
+   - The signature verification fails.
+   - GPG will print a warning such as "BAD signature".
+   - In that case, Bob should not trust the message.
+
+
+
+P.S. I'm uploading all keys - private and public, although private keys ofc shouldn't be shared with anyone!
