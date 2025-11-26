@@ -1,0 +1,1 @@
+This is the original file used to demonstrate hashing and integrity checking.
